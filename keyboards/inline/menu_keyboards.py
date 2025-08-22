@@ -101,14 +101,14 @@ async def solo_restaurant_keyboard(restaurant_id: str) -> InlineKeyboardMarkup:
             callback_data=menu_cd(level=CURRENT_LEVEL + 2,
                                   restaurant_worksheet_id=restaurant_id,
                                   start_menu="new_review",
-            ).pack(),
+                                  ).pack(),
         ),
         InlineKeyboardButton(
             text=lexicon["check_latest"],
             callback_data=menu_cd(level=CURRENT_LEVEL + 1,
                                   restaurant_worksheet_id=restaurant_id,
                                   start_menu="check_latest",
-            ).pack(),
+                                  ).pack(),
         ),
         InlineKeyboardButton(
             text=lexicon["button_back"],
@@ -132,7 +132,7 @@ async def status_keyboard(message: Any, callback_data: menu_cd) -> InlineKeyboar
                                   restaurant_worksheet_id=restaurant_worksheet_id,
                                   start_menu="status_error",
                                   status="error"
-            ).pack(),
+                                  ).pack(),
         ),
         InlineKeyboardButton(
             text=lexicon["status_check"],
@@ -140,14 +140,107 @@ async def status_keyboard(message: Any, callback_data: menu_cd) -> InlineKeyboar
                                   restaurant_worksheet_id=restaurant_worksheet_id,
                                   start_menu="status_check",
                                   status="check"
-            ).pack(),
+                                  ).pack(),
         ),
         InlineKeyboardButton(
             text=lexicon["button_back"],
             callback_data=menu_cd(level=CURRENT_LEVEL - 2,
                                   restaurant_worksheet_id=restaurant_worksheet_id,
                                   start_menu="rest_menu",
-            ).pack(),
+                                  ).pack(),
         ),
     ]
     return markup.row(*buttons, width=1).as_markup()
+
+
+async def back_button(callback_data: menu_cd) -> InlineKeyboardMarkup:
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text=lexicon["button_back"],
+        callback_data=menu_cd(
+            level=callback_data.level - 1,
+            start_menu="new_review",
+            status="0",
+            restaurant_worksheet_id=callback_data.restaurant_worksheet_id,
+        ).pack(),
+    )
+    return builder.as_markup()
+
+
+def back_from_state_to_status(callback_data: dict) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(
+                text=lexicon["button_back"],
+                callback_data=menu_cd(
+                    start_menu="new_review",
+                    status="0",
+                    restaurant_worksheet_id=callback_data["restaurant_worksheet_id"]
+                ).pack()
+            )
+        ]
+    ])
+
+
+async def final_status_keyboard(message: Any, callback_data: menu_cd) -> InlineKeyboardMarkup:
+    # current menu level 6
+    CURRENT_LEVEL = 6
+    markup = InlineKeyboardBuilder()
+    buttons = [
+        InlineKeyboardButton(
+            text=lexicon["status_final_remake"],
+            callback_data=menu_cd(level=CURRENT_LEVEL + 1,
+                                  restaurant_worksheet_id=callback_data.restaurant_worksheet_id,
+                                  status=callback_data.status,
+                                  start_menu="final_status",
+                                  final_status="remake"
+
+                                  ).pack(),
+        ),
+        InlineKeyboardButton(
+            text=lexicon["status_final_good"],
+            callback_data=menu_cd(level=CURRENT_LEVEL + 1,
+                                  restaurant_worksheet_id=callback_data.restaurant_worksheet_id,
+                                  status=callback_data.status,
+                                  start_menu="final_status",
+                                  final_status="good"
+
+                                  ).pack(),
+        ),
+        InlineKeyboardButton(
+            text=lexicon["button_back"],
+            callback_data=menu_cd(
+                start_menu="new_review",
+                status="0",
+                restaurant_worksheet_id=callback_data.restaurant_worksheet_id
+            ).pack()
+        ),
+    ]
+    return markup.row(*buttons, width=1).as_markup()
+
+
+async def accept_final_keyboard(message: Any, callback_data: menu_cd) -> InlineKeyboardMarkup:
+    # current menu level 7
+    CURRENT_LEVEL = 7
+    markup = InlineKeyboardBuilder()
+    buttons = [
+        InlineKeyboardButton(
+            text=lexicon["button_back"],
+            callback_data=menu_cd(
+                start_menu="new_review",
+                status="0",
+                restaurant_worksheet_id=callback_data.restaurant_worksheet_id
+            ).pack()
+        ),
+        InlineKeyboardButton(
+            text=lexicon["button_accept"],
+            callback_data=menu_cd(
+                level=0,
+                restaurant_worksheet_id=callback_data.restaurant_worksheet_id,
+                status=callback_data.status,
+                final_status=callback_data.final_status,
+                start_menu="again_rest_menu"
+            ).pack(),
+        ),
+    ]
+    return markup.row(*buttons, width=2).as_markup()

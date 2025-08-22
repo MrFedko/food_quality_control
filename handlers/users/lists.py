@@ -8,7 +8,10 @@ from keyboards.inline.menu_keyboards import \
      request_contact_keyboard,
      roles_keyboard,
      solo_restaurant_keyboard,
-     status_keyboard, menu_cd
+     status_keyboard,
+     menu_cd,
+     final_status_keyboard,
+     accept_final_keyboard
      )
 
 
@@ -47,8 +50,8 @@ async def list_role_menu(message: Union[CallbackQuery, Message], **kwargs):
         await call.message.edit_text(text, reply_markup=markup)
 
 
-async def list_solo_restaurant_menu(message: Union[CallbackQuery, Message], **kwargs):
-    restaurant_id = str(kwargs.get("restaurant_id"))
+async def list_solo_restaurant_menu(message: Union[CallbackQuery, Message], callback_data: menu_cd):
+    restaurant_id = callback_data.restaurant_worksheet_id
     markup = await solo_restaurant_keyboard(restaurant_id)
     text = lexicon["solo_restaurant_menu"]
     if isinstance(message, Message):
@@ -68,3 +71,22 @@ async def list_status_review(message: Union[CallbackQuery, Message], callback_da
     elif isinstance(message, CallbackQuery):
         call = message
         await call.message.edit_text(text, reply_markup=markup)
+
+
+async def list_final_status(message: Union[CallbackQuery, Message], callback_data: dict, **kwargs):
+    restaurant_worksheet_id = callback_data["restaurant_worksheet_id"]
+    status = callback_data["status"]
+    photo_path = callback_data["photo_path"]
+    menucd = menu_cd(
+        level=6,
+        restaurant_worksheet_id=restaurant_worksheet_id,
+        status=status,
+        photo_path=photo_path,
+    )
+    markup = await final_status_keyboard(message, menucd)
+    await message.answer(lexicon["final_status"], reply_markup=markup)
+
+
+async def list_accept_final(callback: CallbackQuery, callback_data: menu_cd, **kwargs):
+    markup = await accept_final_keyboard(callback, callback_data)
+    await callback.message.edit_reply_markup(reply_markup=markup)

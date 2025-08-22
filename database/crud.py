@@ -24,13 +24,12 @@ class Database:
     phone_number TEXT,
     registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );""")
-        self.connection.commit()
 
     def create_table_reviews(self):
         self.execute("""CREATE TABLE reviews (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     worksheet_id TEXT NOT NULL,
-    rev_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    rev_date TIMESTAMP DEFAULT (datetime('now','+3 hours')),
     status TEXT NOT NULL,
     dish_name TEXT NOT NULL,
     photo_path TEXT,
@@ -40,13 +39,11 @@ class Database:
     final_status TEXT NOT NULL,
     ref_id INTEGER
 );""")
-        self.connection.commit()
 
     def new_user(self, username, surname, user_tg_id, role, phone_number):
         self.execute(
             "INSERT INTO users (username, surname, user_tg_id, role, phone_number) VALUES (?, ?, ?, ?, ?)",
             (username, surname, user_tg_id, role, phone_number))
-        self.connection.commit()
 
     def read_user(self, user_tg_id):
         return self.execute("SELECT * FROM users WHERE user_tg_id = ?", (user_tg_id,), fetchone=True)
@@ -54,3 +51,7 @@ class Database:
     def read_restaurant(self, restaurant_id):
         return self.execute("SELECT * FROM reviews WHERE worksheet_id = ?", (restaurant_id,), fetchone=True)
 
+    def new_review(self, worksheet_id, status, dish_name, photo_path, description, surname_reviewer, surname_chef, final_status, ref_id):
+        self.execute(
+            "INSERT INTO reviews (worksheet_id, status, dish_name, photo_path, description, surname_reviewer, surname_chef, final_status, ref_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (worksheet_id, status, dish_name, photo_path, description, surname_reviewer, surname_chef, final_status, ref_id))

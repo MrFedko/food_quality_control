@@ -45,6 +45,7 @@ class Settings:
 
     PROJECT_PATH = "/Users/mac/Desktop/my_projects/quality_control/controlBot/"
     DB_PATH = PROJECT_PATH + DB_NAME
+    PHOTO_DIR = "data/photo"
     SERVER_IP = "localhost"
     SERVER_PORT = 8000
     SERVER_LINK = f"http://{SERVER_IP}:{SERVER_PORT}"

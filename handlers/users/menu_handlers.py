@@ -1,5 +1,6 @@
 import asyncio
 import os
+import uuid
 import json
 import datetime
 import time
@@ -13,14 +14,16 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from loader import dataBase, dp, bot
 from data.config import settings
 from data.lexicon import lexicon
-from keyboards.inline.menu_keyboards import menu_cd, welcome_cd, restaurant_keyboard
+from keyboards.inline.menu_keyboards import menu_cd, welcome_cd, restaurant_keyboard, back_button, back_from_state_to_status
 from states.user import user_panel
 from .lists import (
     list_restaurant_menu,
     list_welcome_menu,
     list_role_menu,
     list_solo_restaurant_menu,
-    list_status_review
+    list_status_review,
+    list_final_status,
+    list_accept_final
 )
 
 router = Router()
@@ -85,7 +88,7 @@ async def welcome_surname_handler(message: types.Message, state: FSMContext):
 )
 async def restaurant_menu_handler(callback: CallbackQuery, callback_data: menu_cd):
     await callback.message.delete_reply_markup()
-    await list_solo_restaurant_menu(callback)
+    await list_solo_restaurant_menu(callback, callback_data)
 
 
 @router.callback_query(
@@ -93,5 +96,110 @@ async def restaurant_menu_handler(callback: CallbackQuery, callback_data: menu_c
     )
 async def new_review_handler(callback: CallbackQuery, callback_data: menu_cd, state: FSMContext):
     await callback.message.edit_text(lexicon["new_review"])
-    await callback.answer()
     await list_status_review(callback, callback_data)
+    await callback.answer()
+
+
+@router.message(StateFilter(user_panel.dish_name), flags={"chat_action": "typing"})
+async def dish_name_handler(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    await message.answer(
+        lexicon["dish_description"],
+        reply_markup=back_from_state_to_status(data)
+    )
+    dish_name = message.text.strip()
+    await state.update_data(dish_name=dish_name)
+    await state.set_state(user_panel.description)
+
+
+@router.message(StateFilter(user_panel.description), flags={"chat_action": "typing"})
+async def description_handler(message: types.Message, state: FSMContext):
+    dish_description = message.text.strip()
+    await state.update_data(description=dish_description)
+    data = await state.get_data()
+    await message.answer(
+        lexicon["dish_image"],
+        reply_markup=back_from_state_to_status(data)
+    )
+    await state.set_state(user_panel.photo)
+
+
+@router.message(StateFilter(user_panel.photo), flags={"chat_action": "typing"})
+async def photo_handler(message: types.Message, state: FSMContext):
+    data = await state.get_data()
+    restaurant_id = data.get("restaurant_worksheet_id")
+    photo = message.photo[-1]
+    unique_id = uuid.uuid4().hex[:4]
+    filename = f"{restaurant_id}_{unique_id}.jpg"
+    filepath = os.path.join(settings.PHOTO_DIR, filename)
+    await message.bot.download(photo.file_id, destination=filepath)
+    await message.answer(
+        lexicon["chef_surname"],
+        reply_markup=back_from_state_to_status(data)
+    )
+    await state.update_data(photo_path=filename)
+    await state.set_state(user_panel.chef_surname)
+
+
+@router.message(StateFilter(user_panel.chef_surname), flags={"chat_action": "typing"})
+async def chef_surname_handler(message: types.Message, state: FSMContext):
+    chef_surname = message.text.strip()
+    await state.update_data(chef_surname=chef_surname)
+    data = await state.get_data()
+    await list_final_status(message, data)
+    await state.set_state(user_panel.free)
+
+@router.callback_query(
+    menu_cd.filter(MF.start_menu == "final_status"), flags={"chat_action": "typing"}
+)
+async def final_status_handler(callback: types.CallbackQuery, callback_data: menu_cd, state: FSMContext):
+    await state.update_data(final_status=callback_data.final_status)
+    data = await state.get_data()
+    restaurant_name = next((k for k, v in settings.worksheet_ids.items() if v == data["restaurant_worksheet_id"]), None)
+    status = "Ошибка" if data["status"] == "error" else "Контроль качества"
+    dish_name = data["dish_name"]
+    description = data["description"]
+    surname_chef = data["chef_surname"]
+    final_status = "Хорошо" if data["final_status"] == "good" else "На доработку"
+    surname_reviewer = dataBase.read_user(callback.from_user.id)["surname"]
+    date = datetime.datetime.now().strftime("%d-%m-%Y")
+    await state.update_data(surname_reviewer=dataBase.read_user(callback.from_user.id)["surname"])
+    await callback.message.edit_text(lexicon["read_or_not"].format(restaurant_name=restaurant_name, status=status,
+                                                                   dish_name=dish_name, description=description,
+                                                                   surname_chef=surname_chef, final_status=final_status,
+                                                                   surname_reviewer=surname_reviewer, date=date))
+    await list_accept_final(callback, callback_data)
+    await callback.answer()
+
+
+@router.callback_query(
+    menu_cd.filter(MF.start_menu == "again_rest_menu"), flags={"chat_action": "typing"}
+)
+async def again_restaurant_menu_handler(callback: CallbackQuery, callback_data: menu_cd, state: FSMContext):
+    page = 0
+    data = await state.get_data()
+    worksheet_id = data["restaurant_worksheet_id"]
+    status = "Ошибка" if data["status"] == "error" else "Контроль качества"
+    dish_name = data["dish_name"]
+    photo_path = data["photo_path"]
+    description = data["description"]
+    surname_reviewer = dataBase.read_user(callback.from_user.id)["surname"]
+    surname_chef = data["chef_surname"]
+    final_status = "Хорошо" if callback_data.final_status == "good" else "На доработку"
+    ref_id = callback_data.ref_id
+    dataBase.new_review(worksheet_id, status, dish_name, photo_path, description, surname_reviewer, surname_chef, final_status, ref_id)
+    await callback.message.edit_text(lexicon["review_sent"])
+    await callback.message.edit_reply_markup(reply_markup=await restaurant_keyboard(page=page))
+    await callback.answer()
+    await state.clear()
+
+@router.callback_query(
+    menu_cd.filter(MF.status != "0"), flags={"chat_action": "typing"}
+    )
+async def status_handler(callback: types.CallbackQuery, callback_data: menu_cd, state: FSMContext):
+    await callback.message.edit_text(lexicon["dish_name"], reply_markup=await back_button(callback_data))
+    await callback.answer()
+    await state.update_data(status=callback_data.status,
+                            restaurant_worksheet_id=callback_data.restaurant_worksheet_id,
+                            )
+    await state.set_state(user_panel.dish_name)
