@@ -1,3 +1,4 @@
+import uuid
 from typing import Tuple, List, Any
 from loader import dataBase
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton
@@ -91,7 +92,7 @@ async def roles_keyboard(phone_number: str = "0") -> InlineKeyboardMarkup:
     return markup.row(*buttons, width=2).as_markup()
 
 
-async def solo_restaurant_keyboard(restaurant_id: str) -> InlineKeyboardMarkup:
+async def solo_restaurant_keyboard(restaurant_id: str, count_check_reviews: int) -> InlineKeyboardMarkup:
     # current menu level 1
     CURRENT_LEVEL = 1
     markup = InlineKeyboardBuilder()
@@ -104,7 +105,7 @@ async def solo_restaurant_keyboard(restaurant_id: str) -> InlineKeyboardMarkup:
                                   ).pack(),
         ),
         InlineKeyboardButton(
-            text=lexicon["check_latest"],
+            text=lexicon["check_latest"].format(count=count_check_reviews),
             callback_data=menu_cd(level=CURRENT_LEVEL + 1,
                                   restaurant_worksheet_id=restaurant_id,
                                   start_menu="check_latest",
@@ -125,31 +126,45 @@ async def status_keyboard(message: Any, callback_data: menu_cd) -> InlineKeyboar
     CURRENT_LEVEL = 3
     restaurant_worksheet_id = callback_data.restaurant_worksheet_id
     markup = InlineKeyboardBuilder()
-    buttons = [
-        InlineKeyboardButton(
+    buttons = []
+    if callback_data.ref_id == "0":
+        buttons.extend([InlineKeyboardButton(
             text=lexicon["status_error"],
             callback_data=menu_cd(level=CURRENT_LEVEL + 1,
                                   restaurant_worksheet_id=restaurant_worksheet_id,
                                   start_menu="status_error",
-                                  status="error"
+                                  status="error",
                                   ).pack(),
-        ),
-        InlineKeyboardButton(
+                ),
+            InlineKeyboardButton(
             text=lexicon["status_check"],
             callback_data=menu_cd(level=CURRENT_LEVEL + 1,
                                   restaurant_worksheet_id=restaurant_worksheet_id,
                                   start_menu="status_check",
-                                  status="check"
+                                  status="check",
                                   ).pack(),
-        ),
-        InlineKeyboardButton(
+                ),
+            ]
+        )
+    else:
+        buttons.append(InlineKeyboardButton(
+            text=lexicon["status_check"],
+            callback_data=menu_cd(level=CURRENT_LEVEL + 1,
+                                  restaurant_worksheet_id=restaurant_worksheet_id,
+                                  start_menu="status_check",
+                                  status="check",
+                                  ref_id=callback_data.ref_id
+                                  ).pack(),
+            )
+        )
+    buttons.append(InlineKeyboardButton(
             text=lexicon["button_back"],
             callback_data=menu_cd(level=CURRENT_LEVEL - 2,
                                   restaurant_worksheet_id=restaurant_worksheet_id,
                                   start_menu="rest_menu",
                                   ).pack(),
-        ),
-    ]
+        )
+    )
     return markup.row(*buttons, width=1).as_markup()
 
 
@@ -244,3 +259,64 @@ async def accept_final_keyboard(message: Any, callback_data: menu_cd) -> InlineK
         ),
     ]
     return markup.row(*buttons, width=2).as_markup()
+
+
+async def check_latest_keyboard(message: Any, restaurant_worksheet_id, page: int = 0) -> InlineKeyboardMarkup:
+    CURRENT_LEVEL = 2
+    per_page = 5
+    reviews = dataBase.get_reviews_for_check(restaurant_worksheet_id)
+
+    total_pages = (len(reviews) - 1) // per_page + 1  # считаем количество страниц
+
+    start = page * per_page
+    end = start + per_page
+    sliced = reviews[start:end]
+
+    markup = InlineKeyboardBuilder()
+    buttons = []
+
+    for review in sliced:
+        review_date = dt.strptime(review['rev_date'], "%Y-%m-%d %H:%M:%S").strftime("%d.%m.%Y")
+        buttons.append(InlineKeyboardButton(
+            text=f"{review_date} - {review['dish_name']}",
+            callback_data=menu_cd(
+                level=CURRENT_LEVEL + 1,
+                restaurant_worksheet_id=review["worksheet_id"],
+                start_menu="new_review",
+                ref_id=str(review["id"])
+            ).pack(),
+        ))
+    markup.row(*buttons, width=1)
+
+    # пагинация (стрелки влево/вправо)
+    pagination_buttons = []
+    if page > 0:
+        pagination_buttons.append(
+            InlineKeyboardButton(
+                text="◀️",
+                callback_data=f"pagecheck:{page - 1}"
+            )
+        )
+    if page < total_pages - 1:
+        pagination_buttons.append(
+            InlineKeyboardButton(
+                text="▶️",
+                callback_data=f"pagecheck:{page + 1}"
+            )
+        )
+    if pagination_buttons:
+        markup.row(*pagination_buttons)
+
+    # кнопка "Назад"
+    back_button = InlineKeyboardButton(
+        text=lexicon["button_back"],
+        callback_data=menu_cd(
+            level=CURRENT_LEVEL - 1,
+            restaurant_worksheet_id=restaurant_worksheet_id,
+            start_menu="rest_menu"
+        ).pack(),
+    )
+    markup.row(back_button)
+
+    return markup.as_markup()
+

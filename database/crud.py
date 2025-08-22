@@ -37,7 +37,7 @@ class Database:
     surname_reviewer TEXT NOT NULL,
     surname_chef TEXT NOT NULL,
     final_status TEXT NOT NULL,
-    ref_id INTEGER
+    ref_id TEXT
 );""")
 
     def new_user(self, username, surname, user_tg_id, role, phone_number):
@@ -55,3 +55,17 @@ class Database:
         self.execute(
             "INSERT INTO reviews (worksheet_id, status, dish_name, photo_path, description, surname_reviewer, surname_chef, final_status, ref_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (worksheet_id, status, dish_name, photo_path, description, surname_reviewer, surname_chef, final_status, ref_id))
+
+    def count_check_reviews(self, restaurant_id):
+        result = self.execute("SELECT COUNT(*) as count FROM reviews WHERE worksheet_id = ? AND final_status = 'На доработку' AND ref_id = 0", (restaurant_id,), fetchone=True)
+        return result["count"] if result else 0
+
+    def get_reviews_for_check(self, restaurant_id):
+        return self.execute("SELECT * FROM reviews WHERE worksheet_id = ? AND final_status = 'На доработку' AND ref_id = 0", (restaurant_id,), fetchall=True)
+
+    def get_dish_info(self, ref_id):
+        result = self.execute("SELECT dish_name, description FROM reviews WHERE id = ?", (ref_id,), fetchone=True)
+        return result["dish_name"], result["description"] if result else (None, None)
+
+    def update_ref_id(self, review_id, ref_id):
+        self.execute("UPDATE reviews SET ref_id = ? WHERE id = ?", (ref_id, review_id))
