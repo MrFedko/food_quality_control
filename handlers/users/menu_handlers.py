@@ -19,7 +19,8 @@ from .lists import (
     list_restaurant_menu,
     list_welcome_menu,
     list_role_menu,
-    list_solo_restaurant_menu
+    list_solo_restaurant_menu,
+    list_status_review
 )
 
 router = Router()
@@ -85,3 +86,12 @@ async def welcome_surname_handler(message: types.Message, state: FSMContext):
 async def restaurant_menu_handler(callback: CallbackQuery, callback_data: menu_cd):
     await callback.message.delete_reply_markup()
     await list_solo_restaurant_menu(callback)
+
+
+@router.callback_query(
+    menu_cd.filter(MF.start_menu == "new_review"), flags={"chat_action": "typing"}
+    )
+async def new_review_handler(callback: CallbackQuery, callback_data: menu_cd, state: FSMContext):
+    await callback.message.edit_text(lexicon["new_review"])
+    await callback.answer()
+    await list_status_review(callback, callback_data)

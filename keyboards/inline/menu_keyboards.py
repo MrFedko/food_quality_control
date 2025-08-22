@@ -56,11 +56,11 @@ async def restaurant_keyboard(page: int = 0) -> InlineKeyboardMarkup:
     # Стрелки навигации
     nav_buttons = []
     if page > 0:
-        nav_buttons.append(InlineKeyboardButton(text="⬅️", callback_data=f"page:{page-1}"))
+        nav_buttons.append(InlineKeyboardButton(text="⬅️", callback_data=f"page:{page - 1}"))
     if page == 0:
         nav_buttons.append(InlineKeyboardButton(text=" ", callback_data="0"))
     if end < len(items):
-        nav_buttons.append(InlineKeyboardButton(text="➡️", callback_data=f"page:{page+1}"))
+        nav_buttons.append(InlineKeyboardButton(text="➡️", callback_data=f"page:{page + 1}"))
     if end > len(items):
         nav_buttons.append(InlineKeyboardButton(text=" ", callback_data="0"))
 
@@ -77,7 +77,7 @@ def request_contact_keyboard() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True, one_time_keyboard=True)
 
 
-async def roles_keyboard(phone_number: str="0") -> InlineKeyboardMarkup:
+async def roles_keyboard(phone_number: str = "0") -> InlineKeyboardMarkup:
     items = list(settings.roles.items())
     markup = InlineKeyboardBuilder()
     buttons = []
@@ -98,19 +98,55 @@ async def solo_restaurant_keyboard(restaurant_id: str) -> InlineKeyboardMarkup:
     buttons = [
         InlineKeyboardButton(
             text=lexicon["new_review"],
-            callback_data=menu_cd(
-                level=CURRENT_LEVEL + 1, restaurant_worksheet_id=restaurant_id, start_menu="new_review"
+            callback_data=menu_cd(level=CURRENT_LEVEL + 2,
+                                  restaurant_worksheet_id=restaurant_id,
+                                  start_menu="new_review",
             ).pack(),
         ),
         InlineKeyboardButton(
             text=lexicon["check_latest"],
-            callback_data=menu_cd(level=CURRENT_LEVEL + 1, restaurant_worksheet_id=restaurant_id,
-                                  start_menu="check_latest").pack(),
+            callback_data=menu_cd(level=CURRENT_LEVEL + 1,
+                                  restaurant_worksheet_id=restaurant_id,
+                                  start_menu="check_latest",
+            ).pack(),
         ),
         InlineKeyboardButton(
             text=lexicon["button_back"],
             callback_data=menu_cd(
                 level=CURRENT_LEVEL - 1, start_menu="start_menu"
+            ).pack(),
+        ),
+    ]
+    return markup.row(*buttons, width=1).as_markup()
+
+
+async def status_keyboard(message: Any, callback_data: menu_cd) -> InlineKeyboardMarkup:
+    # current menu level 3
+    CURRENT_LEVEL = 3
+    restaurant_worksheet_id = callback_data.restaurant_worksheet_id
+    markup = InlineKeyboardBuilder()
+    buttons = [
+        InlineKeyboardButton(
+            text=lexicon["status_error"],
+            callback_data=menu_cd(level=CURRENT_LEVEL + 1,
+                                  restaurant_worksheet_id=restaurant_worksheet_id,
+                                  start_menu="status_error",
+                                  status="error"
+            ).pack(),
+        ),
+        InlineKeyboardButton(
+            text=lexicon["status_check"],
+            callback_data=menu_cd(level=CURRENT_LEVEL + 1,
+                                  restaurant_worksheet_id=restaurant_worksheet_id,
+                                  start_menu="status_check",
+                                  status="check"
+            ).pack(),
+        ),
+        InlineKeyboardButton(
+            text=lexicon["button_back"],
+            callback_data=menu_cd(level=CURRENT_LEVEL - 2,
+                                  restaurant_worksheet_id=restaurant_worksheet_id,
+                                  start_menu="rest_menu",
             ).pack(),
         ),
     ]
