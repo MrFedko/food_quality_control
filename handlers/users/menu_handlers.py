@@ -212,7 +212,6 @@ async def again_restaurant_menu_handler(callback: CallbackQuery, callback_data: 
     await client.insert_review_row(worksheet_id, date, status,
                                    dish_name, formula, description, surname_reviewer,
                                    surname_chef, final_status, new_ref_id if ref_id != "0" else ref_id)
-    if ref_id != "0":
     await callback.message.edit_text(lexicon["review_sent"])
     await callback.message.edit_reply_markup(reply_markup=await restaurant_keyboard(page=page))
     await callback.answer()
