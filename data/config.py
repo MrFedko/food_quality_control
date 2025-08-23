@@ -49,6 +49,10 @@ class Settings:
     SERVER_IP = "localhost"
     SERVER_PORT = 8000
     SERVER_LINK = f"http://{SERVER_IP}:{SERVER_PORT}"
-
+    PHOTO_PATH = PROJECT_PATH + "/" + PHOTO_DIR + "/"
+    GOOGLE_DRIVE_FOLDER_ID = "1v7he5jjYeT-sXtbySeMvLA2R_ls-wRzW"
+    DROPBOX_TOKEN = "eb6mWvINZQUAAAAAAAAAAUJ8c1PpAqTvmEoaTiQq739Zu2Q0FNjd3yaLtolxIoK1"
+    DB_KEY = os.getenv("DB_KEY")
+    DB_SECRET = os.getenv("DB_SECRET")
 
 settings = Settings()

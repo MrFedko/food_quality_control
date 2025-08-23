@@ -4,7 +4,7 @@ from data.config import settings
 from handlers.users import menu_handlers
 from handlers.admins import admin_hendlers, help
 import asyncio
-from loader import dp, bot, dataBase, appFA
+from loader import dp, bot
 from utils.misc.set_bot_commands import set_default_commands
 from utils.misc.notify_admins import on_startup_notify, on_shutdown_notify
 import uvicorn
@@ -34,21 +34,13 @@ async def main():
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
 
-def run_fastapi():
-    uvicorn.run("loader:appFA", host=settings.SERVER_IP, port=settings.SERVER_PORT)
-
-
 def run_aiogram():
     from app import main
     asyncio.run(main())
 
 
 if __name__ == "__main__":
-    p1 = Process(target=run_fastapi)
-    p1.start()
-
     p2 = Process(target=run_aiogram)
     p2.start()
 
-    p1.join()
     p2.join()

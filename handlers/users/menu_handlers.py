@@ -8,7 +8,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, ReplyKeyboardRemove
 from aiogram.filters import Command, StateFilter
 from magic_filter import F as MF
-from loader import dataBase, dp
+from loader import dataBase, dp, client, clientDB
 from data.config import settings
 from data.lexicon import lexicon
 from keyboards.inline.menu_keyboards import (menu_cd, welcome_cd, restaurant_keyboard,
@@ -64,7 +64,7 @@ async def page_check_handler(callback: types.CallbackQuery, state: FSMContext):
 
 
 @router.message(f.content_type == ContentType.CONTACT)
-async def choose_city(message: types.Message):
+async def choose_phone(message: types.Message):
     confirm_msg = await message.answer(
         "Спасибо, номер получен ✅",
         reply_markup=ReplyKeyboardRemove()
@@ -191,21 +191,33 @@ async def again_restaurant_menu_handler(callback: CallbackQuery, callback_data: 
     page = 0
     data = await state.get_data()
     worksheet_id = data["restaurant_worksheet_id"]
+    date = datetime.datetime.now().strftime("%d-%m-%Y")
     status = "Ошибка" if data["status"] == "error" else "Контроль качества"
     dish_name = data["dish_name"]
     photo_path = data["photo_path"]
+    photo_pah_for_sheet = f"{settings.PHOTO_PATH}{photo_path}"
+    remote_file = f"/photo/{os.path.basename(photo_pah_for_sheet)}"
+    public_url = clientDB.upload_and_get_url(photo_pah_for_sheet, remote_file)
+    public_url = public_url.replace("www.dropbox.com", "dl.dropboxusercontent.com")
     description = data["description"]
     surname_reviewer = dataBase.read_user(callback.from_user.id)["surname"]
     surname_chef = data["chef_surname"]
     final_status = "Хорошо" if callback_data.final_status == "good" else "На доработку"
     ref_id = data["ref_id"] if "ref_id" in data else "0"
     new_ref_id = uuid.uuid4().hex[:5]
-    dataBase.update_ref_id(ref_id, new_ref_id)
-    dataBase.new_review(worksheet_id, status, dish_name, photo_path, description, surname_reviewer, surname_chef, final_status, new_ref_id)
+    formula = "=IMAGE(\"" + public_url + "\"; 1)"
+    if ref_id != "0":
+        dataBase.update_ref_id(ref_id, new_ref_id if ref_id != "0" else ref_id)
+    dataBase.new_review(worksheet_id, status, dish_name, photo_path, description, surname_reviewer, surname_chef, final_status, new_ref_id if ref_id != "0" else ref_id)
+    await client.insert_review_row(worksheet_id, date, status,
+                                   dish_name, formula, description, surname_reviewer,
+                                   surname_chef, final_status, new_ref_id if ref_id != "0" else ref_id)
+    if ref_id != "0":
     await callback.message.edit_text(lexicon["review_sent"])
     await callback.message.edit_reply_markup(reply_markup=await restaurant_keyboard(page=page))
     await callback.answer()
     await state.clear()
+
 
 @router.callback_query(
     menu_cd.filter(MF.status != "0"), flags={"chat_action": "typing"}
