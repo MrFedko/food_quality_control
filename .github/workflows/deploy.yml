@@ -21,21 +21,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             # Переходим в директорию проекта
-            cd /home/controlBot || git clone git@github.com:MrFedko/food_quality_control.git /root/food_quality_control
             cd /home/controlBot
-
-            # Получаем последние изменения
-            git fetch --all
-            git reset --hard origin/main
-
-            # Активируем виртуальное окружение
-            source .venv/bin/activate
-
-            # Устанавливаем обновлённые зависимости
-            pip install -r requirements.txt
-
-            # Перезапускаем сервис systemd
-            systemctl restart controlbot.service
-
-            # Проверяем статус
-            systemctl status controlbot.service --no-pager
+                  git pull
+                  source venv/bin/activate
+                  sudo systemctl restart controlbot
