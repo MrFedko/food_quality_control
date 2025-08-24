@@ -51,7 +51,7 @@ class Settings:
     SERVER_LINK = f"http://{SERVER_IP}:{SERVER_PORT}"
     PHOTO_PATH = PROJECT_PATH + "/" + PHOTO_DIR + "/"
     GOOGLE_DRIVE_FOLDER_ID = "1v7he5jjYeT-sXtbySeMvLA2R_ls-wRzW"
-    DROPBOX_TOKEN = "eb6mWvINZQUAAAAAAAAAAUJ8c1PpAqTvmEoaTiQq739Zu2Q0FNjd3yaLtolxIoK1"
+    DROPBOX_TOKEN = os.getenv("DROPBOX_TOKEN")
     DB_KEY = os.getenv("DB_KEY")
     DB_SECRET = os.getenv("DB_SECRET")
 
