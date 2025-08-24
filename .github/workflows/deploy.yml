@@ -1,4 +1,4 @@
-name: Deploy Bot
+name: Deploy Bot via SSH
 
 on:
   push:
@@ -7,21 +7,35 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          port: ${{ secrets.SERVER_PORT }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
           script: |
-            cd ~/controlBot || git clone git@github.com:MrFedko/food_quality_control.git controlBot
-            cd controlBot
-            git pull origin main
+            # Переходим в директорию проекта
+            cd /home/controlBot || git clone git@github.com:MrFedko/food_quality_control.git /root/food_quality_control
+            cd /home/controlBot
+
+            # Получаем последние изменения
+            git fetch --all
+            git reset --hard origin/main
+
+            # Активируем виртуальное окружение
             source .venv/bin/activate
+
+            # Устанавливаем обновлённые зависимости
             pip install -r requirements.txt
-            sudo systemctl restart controlbot
+
+            # Перезапускаем сервис systemd
+            systemctl restart controlbot.service
+
+            # Проверяем статус
+            systemctl status controlbot.service --no-pager
