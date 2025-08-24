@@ -5,7 +5,7 @@ load_dotenv()
 
 
 class Settings:
-    PROJECT_NAME = "QControl"
+    PROJECT_NAME = "QualityControl"
     DB_NAME = "control.db"
     PROJECT_DESCRIPTION = "Quality control of food and drinks"
 
