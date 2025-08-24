@@ -22,5 +22,6 @@ jobs:
           script: |
             # Переходим в директорию проекта
             cd /home/controlBot
+                  sudo systemctl stop controlbot
                   git pull
-                  sudo systemctl restart controlbot
+                  sudo systemctl start controlbot
