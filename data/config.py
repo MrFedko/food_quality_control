@@ -43,7 +43,8 @@ class Settings:
         "su_chef": "Су-шеф",
     }
 
-    PROJECT_PATH = "/Users/mac/Desktop/my_projects/quality_control/controlBot/"
+    # PROJECT_PATH = "/Users/mac/Desktop/my_projects/quality_control/controlBot/"
+    PROJECT_PATH = "/home/controlBot"
     DB_PATH = PROJECT_PATH + DB_NAME
     PHOTO_DIR = "data/photo"
     SERVER_IP = "localhost"
