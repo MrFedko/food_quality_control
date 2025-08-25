@@ -63,6 +63,7 @@ class GoogleSheetsClient:
         surname_reviewer: str,
         surname_chef: str,
         final_status: str,
+        link_photo: str,
         ref_id: int
     ):
         """
@@ -81,6 +82,7 @@ class GoogleSheetsClient:
             surname_reviewer,
             surname_chef,
             final_status,
+            link_photo,
             ref_id
         ]
         await ws.append_row(row_data, value_input_option='USER_ENTERED')
