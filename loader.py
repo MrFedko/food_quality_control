@@ -6,6 +6,7 @@ from data.config import settings
 from database.crud import Database
 from utils.dropbox import DropboxClient
 from utils.sheet_utils.sheet_control import GoogleSheetsClient
+from utils.watcher import Watcher
 
 session = AiohttpSession()
 bot = Bot(token=settings.BOT_TOKEN, parse_mode=ParseMode.HTML, session=session)
@@ -17,3 +18,4 @@ client = GoogleSheetsClient(
     sheet_id=settings.SHEET_ID
 )
 clientDB = DropboxClient(settings.DB_KEY, settings.DB_SECRET, settings.DROPBOX_TOKEN)
+watcher = Watcher(dataBase, bot)
