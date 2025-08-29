@@ -1,11 +1,12 @@
 import os
 import random
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+import pytz
 
 
 class Watcher:
     def __init__(self, database, bot):
-        self.scheduler = AsyncIOScheduler()
+        self.scheduler = AsyncIOScheduler(timezone=pytz.timezone("Europe/Moscow"))
         self.database = database
         self.bot = bot
         self.messages = {
