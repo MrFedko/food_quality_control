@@ -41,6 +41,8 @@ class Settings:
         "manager": "Менеджер",
         "chef": "Шеф-повар",
         "su_chef": "Су-шеф",
+        "owner": "Собственник",
+        "ou": "ОУ",
     }
 
     # PROJECT_PATH = "/Users/mac/Desktop/my_projects/quality_control/controlBot/"
