@@ -54,7 +54,7 @@ class Database:
 
     def new_review(self, worksheet_id, status, dish_name, photo_path, description, price, surname_reviewer, surname_chef, final_status, ref_id):
         self.execute(
-            "INSERT INTO reviews (worksheet_id, status, dish_name, photo_path, description, price, surname_reviewer, surname_chef, final_status, ref_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO reviews (worksheet_id, status, dish_name, photo_path, description, price, surname_reviewer, surname_chef, final_status, ref_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (worksheet_id, status, dish_name, photo_path, description, price, surname_reviewer, surname_chef, final_status, ref_id))
 
     def count_check_reviews(self, restaurant_id):
