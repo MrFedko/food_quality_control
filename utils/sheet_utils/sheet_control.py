@@ -88,3 +88,19 @@ class GoogleSheetsClient:
             ref_id
         ]
         await ws.append_row(row_data, value_input_option='USER_ENTERED')
+
+
+async def main():
+    # Инициализация клиента
+    client = GoogleSheetsClient("../../quality-control-469712-5f601fa34788.json", settings.SHEET_ID)
+
+    # Получаем все листы
+    worksheets = await client.get_worksheets()
+
+    # Печатаем название и ID каждого листа
+    for ws in worksheets:
+        print(f"Title: {ws.title}, ID: {ws.id}")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
