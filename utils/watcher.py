@@ -1,6 +1,8 @@
+import asyncio
 import os
 import random
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from aiogram.exceptions import TelegramRetryAfter, TelegramAPIError
 import pytz
 
 
@@ -29,14 +31,36 @@ class Watcher:
 
     async def check_end_date(self):
         data = self.database.get_managers()
-        if data:
-            for user in data:
-                message = random.choice(list(self.messages.values()))
+        if not data:
+            await self.bot.send_message(os.getenv("ADMIN_ID"), "Watcher: no managers found")
+            return
+
+        for user in data:
+            message = random.choice(list(self.messages.values()))
+            success = False
+            while not success:
                 try:
                     await self.bot.send_message(user["user_tg_id"], message)
+                    success = True
+                except TelegramRetryAfter as e:
+                    await asyncio.sleep(e.retry_after)
+                except TelegramAPIError as e:
+                    await self.bot.send_message(
+                        os.getenv("ADMIN_ID"),
+                        f"[!] User {user['user_tg_id']} not notified: {e}"
+                    )
+                    success = True
                 except Exception as e:
-                    await self.bot.send_message(os.getenv("ADMIN_ID"), f"[+] user <code>{user}</code> not notified {e}")
-        await self.bot.send_message(os.getenv("ADMIN_ID"), "Watcher success")
+                    await self.bot.send_message(
+                        os.getenv("ADMIN_ID"),
+                        f"[!] Unexpected error for user {user['user_tg_id']}: {e}"
+                    )
+                    success = True
+
+            # Небольшая задержка между сообщениями, чтобы не сработал лимит
+            await asyncio.sleep(0.3)
+
+        await self.bot.send_message(os.getenv("ADMIN_ID"), "Watcher: all messages sent successfully")
 
     def stop(self):
         self.scheduler.shutdown()
