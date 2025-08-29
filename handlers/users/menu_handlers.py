@@ -90,7 +90,8 @@ async def welcome_surname_handler(message: types.Message, state: FSMContext):
     data = await state.get_data()
     role = data.get("role")
     phone_number = data.get("phone_number")
-    dataBase.new_user(message.from_user.username, surname, message.from_user.id, role, phone_number)
+    dataBase.new_user(message.from_user.username if message.from_user.username else message.from_user.first_name,
+                      surname, message.from_user.id, role, phone_number)
     await list_restaurant_menu(message)
     await state.clear()
 
