@@ -23,7 +23,8 @@ lexicon = {
         "status_final_remake":  "❌Отправить на доработку ❌",
         "status_final_good":    "✅Все хорошо ✅",
         "read_or_not":          "Подтверждаешь отправку данных?\n\n<b>Ресторан:</b> {restaurant_name}\n<b>Статус:</b> {status}"\
-                                "\n<b>Блюдо/напиток:</b> {dish_name}\n\n<b>Описание:</b> {description}\n\n<b>Шеф-повар/су-шеф:</b> {surname_chef}"\
+                                "\n<b>Блюдо/напиток:</b> {dish_name}\n\n<b>Описание:</b> {description}\n\n<b>ЦенаЖ :</b> {price}"\
+                                "\n\n<b>Шеф-повар/су-шеф:</b> {surname_chef}"\
                                 "\n<b>Финальный статус:</b> {final_status}\n<b>Фамилия аудитора:</b> {surname_reviewer}"\
                                 "\n<b>Дата:</b> {date}\n\nЕсли все верно, то нажми на кнопку ниже",
         "button_accept":        "✅ Подтверждаю ✅",
