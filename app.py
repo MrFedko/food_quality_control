@@ -4,7 +4,7 @@ from data.config import settings
 from handlers.users import menu_handlers
 from handlers.admins import admin_hendlers, help
 import asyncio
-from loader import dp, bot
+from loader import dp, bot, watcher
 from utils.misc.set_bot_commands import set_default_commands
 from utils.misc.notify_admins import on_startup_notify, on_shutdown_notify
 import uvicorn
@@ -31,6 +31,8 @@ async def main():
     dp.startup.register(on_startup)
     dp.shutdown.register(on_shutdown)
     connect_routers()
+    daemon = watcher
+    daemon.run()
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
 

@@ -70,3 +70,6 @@ class Database:
 
     def update_ref_id(self, review_id, ref_id):
         self.execute("UPDATE reviews SET ref_id = ? WHERE id = ?", (ref_id, review_id))
+
+    def get_managers(self):
+        return self.execute("SELECT user_tg_id FROM users WHERE role = 'manager'", fetchall=True)
