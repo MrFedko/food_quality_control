@@ -36,13 +36,5 @@ async def main():
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
 
-def run_aiogram():
-    from app import main
-    asyncio.run(main())
-
-
 if __name__ == "__main__":
-    p2 = Process(target=run_aiogram)
-    p2.start()
-
-    p2.join()
+    asyncio.run(main())
