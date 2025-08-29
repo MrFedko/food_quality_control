@@ -230,6 +230,8 @@ async def again_restaurant_menu_handler(callback: CallbackQuery, callback_data: 
                                    dish_name, formula, description, price, surname_reviewer,
                                    surname_chef, final_status, formula_link, new_ref_id if ref_id != "0" else ref_id)
     await callback.message.edit_text(lexicon["review_sent"])
+    await callback.message.edit_reply_markup(reply_markup=None)
+    await callback.answer("Отзыв принят", show_alert=False)
     await callback.message.edit_reply_markup(reply_markup=await restaurant_keyboard(page=page))
     await callback.answer()
     await state.clear()
