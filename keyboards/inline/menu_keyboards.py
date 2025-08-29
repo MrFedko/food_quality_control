@@ -276,7 +276,7 @@ async def check_latest_keyboard(message: Any, restaurant_worksheet_id, page: int
     buttons = []
 
     for review in sliced:
-        review_date = dt.strptime(review['rev_date'], "%Y-%m-%d %H:%M:%S").strftime("%d.%m.%Y")
+        review_date = dt.strptime(review['rev_date'], "%Y-%m-%d %H:%M:%S").strftime("%d.%m")
         buttons.append(InlineKeyboardButton(
             text=f"{review_date} - {review['dish_name']}",
             callback_data=menu_cd(
