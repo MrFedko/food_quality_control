@@ -130,6 +130,18 @@ async def description_handler(message: types.Message, state: FSMContext):
     await state.update_data(description=dish_description)
     data = await state.get_data()
     await message.answer(
+        lexicon["dish_price"],
+        reply_markup=back_from_state_to_status(data)
+    )
+    await state.set_state(user_panel.price)
+
+
+@router.message(StateFilter(user_panel.price), flags={"chat_action": "typing"})
+async def price_handler(message: types.Message, state: FSMContext):
+    dish_price = message.text.strip()
+    await state.update_data(price=dish_price)
+    data = await state.get_data()
+    await message.answer(
         lexicon["dish_image"],
         reply_markup=back_from_state_to_status(data)
     )
@@ -200,6 +212,7 @@ async def again_restaurant_menu_handler(callback: CallbackQuery, callback_data: 
     public_url = clientDB.upload_and_get_url(photo_pah_for_sheet, remote_file)
     public_url = public_url.replace("www.dropbox.com", "dl.dropboxusercontent.com")
     description = data["description"]
+    price = data["price"]
     surname_reviewer = dataBase.read_user(callback.from_user.id)["surname"]
     surname_chef = data["chef_surname"]
     final_status = "Хорошо" if callback_data.final_status == "good" else "На доработку"
@@ -209,9 +222,9 @@ async def again_restaurant_menu_handler(callback: CallbackQuery, callback_data: 
     formula_link = f'=HYPERLINK("{public_url}"; "Ссылка на фото")'
     if ref_id != "0":
         dataBase.update_ref_id(ref_id, new_ref_id if ref_id != "0" else ref_id)
-    dataBase.new_review(worksheet_id, status, dish_name, photo_path, description, surname_reviewer, surname_chef, final_status, new_ref_id if ref_id != "0" else ref_id)
+    dataBase.new_review(worksheet_id, status, dish_name, photo_path, description, price, surname_reviewer, surname_chef, final_status, new_ref_id if ref_id != "0" else ref_id)
     await client.insert_review_row(worksheet_id, date, status,
-                                   dish_name, formula, description, surname_reviewer,
+                                   dish_name, formula, description, price, surname_reviewer,
                                    surname_chef, final_status, formula_link, new_ref_id if ref_id != "0" else ref_id)
     await callback.message.edit_text(lexicon["review_sent"])
     await callback.message.edit_reply_markup(reply_markup=await restaurant_keyboard(page=page))

@@ -34,6 +34,7 @@ class Database:
     dish_name TEXT NOT NULL,
     photo_path TEXT,
     description TEXT NOT NULL,
+    price TEXT,
     surname_reviewer TEXT NOT NULL,
     surname_chef TEXT NOT NULL,
     final_status TEXT NOT NULL,
@@ -51,10 +52,10 @@ class Database:
     def read_restaurant(self, restaurant_id):
         return self.execute("SELECT * FROM reviews WHERE worksheet_id = ?", (restaurant_id,), fetchone=True)
 
-    def new_review(self, worksheet_id, status, dish_name, photo_path, description, surname_reviewer, surname_chef, final_status, ref_id):
+    def new_review(self, worksheet_id, status, dish_name, photo_path, description, price, surname_reviewer, surname_chef, final_status, ref_id):
         self.execute(
-            "INSERT INTO reviews (worksheet_id, status, dish_name, photo_path, description, surname_reviewer, surname_chef, final_status, ref_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (worksheet_id, status, dish_name, photo_path, description, surname_reviewer, surname_chef, final_status, ref_id))
+            "INSERT INTO reviews (worksheet_id, status, dish_name, photo_path, description, price, surname_reviewer, surname_chef, final_status, ref_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (worksheet_id, status, dish_name, photo_path, description, price, surname_reviewer, surname_chef, final_status, ref_id))
 
     def count_check_reviews(self, restaurant_id):
         result = self.execute("SELECT COUNT(*) as count FROM reviews WHERE worksheet_id = ? AND final_status = 'На доработку' AND ref_id = 0", (restaurant_id,), fetchone=True)
