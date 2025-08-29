@@ -6,6 +6,7 @@ class user_panel(StatesGroup):
     new_review = State()
     dish_name = State()
     description = State()
+    price = State()
     photo = State()
     chef_surname = State()
     free = State()
