@@ -183,6 +183,7 @@ async def final_status_handler(callback: types.CallbackQuery, callback_data: men
     status = "Ошибка" if data["status"] == "error" else "Контроль качества"
     dish_name = data["dish_name"]
     description = data["description"]
+    price = data["price"]
     surname_chef = data["chef_surname"]
     final_status = "Хорошо" if data["final_status"] == "good" else "На доработку"
     surname_reviewer = dataBase.read_user(callback.from_user.id)["surname"]
@@ -190,6 +191,7 @@ async def final_status_handler(callback: types.CallbackQuery, callback_data: men
     await state.update_data(surname_reviewer=dataBase.read_user(callback.from_user.id)["surname"])
     await callback.message.edit_text(lexicon["read_or_not"].format(restaurant_name=restaurant_name, status=status,
                                                                    dish_name=dish_name, description=description,
+                                                                   price=price,
                                                                    surname_chef=surname_chef, final_status=final_status,
                                                                    surname_reviewer=surname_reviewer, date=date))
     await list_accept_final(callback, callback_data)
