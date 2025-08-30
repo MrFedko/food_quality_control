@@ -25,7 +25,7 @@ class Watcher:
     async def run_loop(self):
         while True:
             now = datetime.now()
-            next_run = now.replace(hour=18, minute=20, second=0, microsecond=0)
+            next_run = now.replace(hour=12, minute=0, second=0, microsecond=0)
             if next_run <= now:
                 next_run += timedelta(days=1)
             wait_seconds = (next_run - now).total_seconds()
