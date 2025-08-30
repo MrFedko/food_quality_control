@@ -25,7 +25,7 @@ class Watcher:
 }
 
     def run(self):
-        self.scheduler.add_job(self.check_end_date, trigger="cron", hour=12, minute=00)
+        self.scheduler.add_job(self.check_end_date, trigger="cron", hour=16, minute=40)
         self.scheduler.start()
 
     async def check_end_date(self):
