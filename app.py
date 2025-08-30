@@ -25,7 +25,7 @@ def connect_routers():
 
 
 async def main():
-    await asyncio.create_task(watcher.run_loop())
+    asyncio.create_task(watcher.run_loop())
     dp.message.middleware.register(ChatActionMiddleware())
     await bot.delete_webhook(drop_pending_updates=True)
     dp.startup.register(on_startup)
