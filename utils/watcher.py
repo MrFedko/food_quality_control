@@ -25,11 +25,12 @@ class Watcher:
 }
 
     def run(self):
-        self.scheduler.add_job(self.check_end_date, trigger="cron", hour=16, minute=40)
+        self.scheduler.add_job(self.check_end_date, trigger="cron", hour=16, minute=45)
         self.scheduler.start()
 
     async def check_end_date(self):
         data = self.database.get_managers()
+        await self.bot.send_message(os.getenv("ADMIN_ID"), f"Watcher: started {data}")
         if not data:
             await self.bot.send_message(os.getenv("ADMIN_ID"), "Watcher: no managers found")
             return
