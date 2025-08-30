@@ -24,9 +24,8 @@ class Watcher:
     9: "Петербургский полдень настал. Проверьте продукты! А тем, кто вне смены, – культурного отдыха и, возможно, встречи с Музой 🎶."
 }
 
-
     def run(self):
-        self.scheduler.add_job(self.check_end_date, trigger="cron", hour=12, minute=00)
+        self.scheduler.add_job(self.check_end_date, trigger="cron", hour=16, minute=30)
         self.scheduler.start()
 
     async def check_end_date(self):
@@ -56,8 +55,6 @@ class Watcher:
                         f"[!] Unexpected error for user {user['user_tg_id']}: {e}"
                     )
                     success = True
-
-            # Небольшая задержка между сообщениями, чтобы не сработал лимит
             await asyncio.sleep(0.3)
 
         await self.bot.send_message(os.getenv("ADMIN_ID"), "Watcher: all messages sent successfully")
