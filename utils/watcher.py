@@ -8,7 +8,7 @@ import pytz
 
 class Watcher:
     def __init__(self, database, bot):
-        self.scheduler = AsyncIOScheduler()
+        self.scheduler = AsyncIOScheduler(timezone=pytz.timezone("Europe/Moscow"))
         self.database = database
         self.bot = bot
         self.messages = {
@@ -25,7 +25,7 @@ class Watcher:
 }
 
     def run(self):
-        self.scheduler.add_job(self.check_end_date, trigger="cron", hour=16, minute=35)
+        self.scheduler.add_job(self.check_end_date, trigger="cron", hour=12, minute=00)
         self.scheduler.start()
 
     async def check_end_date(self):
