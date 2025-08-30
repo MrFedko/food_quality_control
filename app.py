@@ -26,12 +26,12 @@ def connect_routers():
 
 
 async def main():
+    watcher.run()
     dp.message.middleware.register(ChatActionMiddleware())
     await bot.delete_webhook(drop_pending_updates=True)
     dp.startup.register(on_startup)
     dp.shutdown.register(on_shutdown)
     connect_routers()
-    watcher.run()
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
 
