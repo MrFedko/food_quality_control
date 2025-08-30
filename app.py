@@ -7,7 +7,6 @@ import asyncio
 from loader import dp, bot, watcher
 from utils.misc.set_bot_commands import set_default_commands
 from utils.misc.notify_admins import on_startup_notify, on_shutdown_notify
-import uvicorn
 
 
 async def on_startup(bot):
@@ -26,7 +25,7 @@ def connect_routers():
 
 
 async def main():
-    watcher.run()
+    await asyncio.create_task(watcher.run_loop())
     dp.message.middleware.register(ChatActionMiddleware())
     await bot.delete_webhook(drop_pending_updates=True)
     dp.startup.register(on_startup)

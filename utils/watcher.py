@@ -1,14 +1,12 @@
 import asyncio
 import os
 import random
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from datetime import datetime, timedelta
 from aiogram.exceptions import TelegramRetryAfter, TelegramAPIError
-import pytz
 
 
 class Watcher:
     def __init__(self, database, bot):
-        self.scheduler = AsyncIOScheduler(timezone=pytz.timezone("Europe/Moscow"))
         self.database = database
         self.bot = bot
         self.messages = {
@@ -24,13 +22,21 @@ class Watcher:
     9: "Петербургский полдень настал. Проверьте продукты! А тем, кто вне смены, – культурного отдыха и, возможно, встречи с Музой 🎶."
 }
 
-    def run(self):
-        self.scheduler.add_job(self.check_end_date, trigger="cron", hour=16, minute=53)
-        self.scheduler.start()
+    async def run_loop(self):
+        while True:
+            now = datetime.now()
+            next_run = now.replace(hour=18, minute=20, second=0, microsecond=0)
+            if next_run <= now:
+                next_run += timedelta(days=1)
+            wait_seconds = (next_run - now).total_seconds()
 
-    async def check_end_date(self):
+            await asyncio.sleep(wait_seconds)
+            await self.send_messages()
+
+    async def send_messages(self):
         data = self.database.get_managers()
-        await self.bot.send_message(os.getenv("ADMIN_ID"), f"Watcher: started {data}")
+        await self.bot.send_message(os.getenv("ADMIN_ID"), f"Watcher: started, managers={len(data)}")
+
         if not data:
             await self.bot.send_message(os.getenv("ADMIN_ID"), "Watcher: no managers found")
             return
@@ -45,20 +51,13 @@ class Watcher:
                 except TelegramRetryAfter as e:
                     await asyncio.sleep(e.retry_after)
                 except TelegramAPIError as e:
-                    await self.bot.send_message(
-                        os.getenv("ADMIN_ID"),
-                        f"[!] User {user['user_tg_id']} not notified: {e}"
-                    )
+                    await self.bot.send_message(os.getenv("ADMIN_ID"),
+                                                f"[!] User {user['user_tg_id']} not notified: {e}")
                     success = True
                 except Exception as e:
-                    await self.bot.send_message(
-                        os.getenv("ADMIN_ID"),
-                        f"[!] Unexpected error for user {user['user_tg_id']}: {e}"
-                    )
+                    await self.bot.send_message(os.getenv("ADMIN_ID"),
+                                                f"[!] Unexpected error for user {user['user_tg_id']}: {e}")
                     success = True
             await asyncio.sleep(0.3)
 
         await self.bot.send_message(os.getenv("ADMIN_ID"), "Watcher: all messages sent successfully")
-
-    def stop(self):
-        self.scheduler.shutdown()
