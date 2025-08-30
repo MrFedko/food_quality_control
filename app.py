@@ -31,8 +31,7 @@ async def main():
     dp.startup.register(on_startup)
     dp.shutdown.register(on_shutdown)
     connect_routers()
-    daemon = watcher
-    daemon.run()
+    watcher.run()
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 
 
