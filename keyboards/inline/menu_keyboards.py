@@ -137,6 +137,14 @@ async def status_keyboard(message: Any, callback_data: menu_cd) -> InlineKeyboar
                                   ).pack(),
                 ),
             InlineKeyboardButton(
+            text=lexicon["status_opinion"],
+            callback_data=menu_cd(level=CURRENT_LEVEL + 1,
+                                  restaurant_worksheet_id=restaurant_worksheet_id,
+                                  start_menu="status_opinion",
+                                  status="opinion",
+                                  ).pack(),
+                ),
+            InlineKeyboardButton(
             text=lexicon["status_check"],
             callback_data=menu_cd(level=CURRENT_LEVEL + 1,
                                   restaurant_worksheet_id=restaurant_worksheet_id,
