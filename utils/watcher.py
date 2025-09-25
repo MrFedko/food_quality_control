@@ -41,8 +41,8 @@ class Watcher:
             await self.bot.send_message(os.getenv("ADMIN_ID"), "Watcher: no managers found")
             return
 
+        message = random.choice(list(self.messages.values()))
         for user in data:
-            message = random.choice(list(self.messages.values()))
             success = False
             while not success:
                 try:

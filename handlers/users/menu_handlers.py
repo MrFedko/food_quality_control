@@ -13,7 +13,8 @@ from data.config import settings
 from data.lexicon import lexicon
 from keyboards.inline.menu_keyboards import (menu_cd, welcome_cd, restaurant_keyboard,
                                              back_button, back_from_state_to_status,
-                                             check_latest_keyboard)
+                                             check_latest_keyboard,
+                                             dishes_by_category_keyboard)
 from states.user import user_panel
 from .lists import (
     list_restaurant_menu,
@@ -23,7 +24,9 @@ from .lists import (
     list_status_review,
     list_final_status,
     list_accept_final,
-    list_check_latest
+    list_check_latest,
+    list_category_dishes,
+    list_dishes_by_category
 )
 
 router = Router()
@@ -240,12 +243,15 @@ async def again_restaurant_menu_handler(callback: CallbackQuery, callback_data: 
     )
 async def status_handler(callback: types.CallbackQuery, callback_data: menu_cd, state: FSMContext):
     if callback_data.ref_id == "0":
-        await callback.message.edit_text(lexicon["dish_name"], reply_markup=await back_button(callback_data))
+        await list_category_dishes(callback, callback_data)
         await callback.answer()
         await state.update_data(status=callback_data.status,
                                 restaurant_worksheet_id=callback_data.restaurant_worksheet_id,
                                 )
-        await state.set_state(user_panel.dish_name)
+        if dataBase.table_exists(callback_data.restaurant_worksheet_id):
+            await state.set_state(user_panel.dish_category)
+        else:
+            await state.set_state(user_panel.dish_name)
     else:
         await callback.message.edit_text(lexicon["dish_description"], reply_markup=await back_button(callback_data))
         await callback.answer()
@@ -266,3 +272,28 @@ async def check_latest_handler(callback: CallbackQuery, callback_data: menu_cd, 
     await state.update_data(restaurant_worksheet_id=callback_data.restaurant_worksheet_id)
     await list_check_latest(callback, callback_data.restaurant_worksheet_id)
     await callback.answer()
+
+
+@router.callback_query(
+    menu_cd.filter(MF.start_menu == "open_food"), flags={"chat_action": "typing"}
+)
+async def open_food_handler(callback: types.CallbackQuery, callback_data: menu_cd, state: FSMContext):
+    if callback_data.dish_id == "none":
+        await state.set_state(user_panel.dish_name)
+        await callback.message.edit_text(lexicon["dish_name"], reply_markup=await back_button(callback_data))
+    else:
+        dish = dataBase.get_dishes_by_id(callback_data.restaurant_worksheet_id, callback_data.dish_id)
+        dish_name = f"{dish['section']} - {dish['dish_name']}"
+        await state.update_data(dish_name=dish_name)
+        await state.set_state(user_panel.description)
+        await callback.message.edit_text(lexicon["dish_description"], reply_markup=await back_button(callback_data))
+    await callback.answer()
+
+@router.callback_query(
+    menu_cd.filter(MF.start_menu == "s_n_d"), flags={"chat_action": "typing"}
+)
+async def page_dishes_handler(callback: types.CallbackQuery, callback_data: menu_cd, state: FSMContext):
+    await callback.answer()
+    data = await state.get_data()
+    await state.update_data(section=callback_data.section)
+    await list_dishes_by_category(callback, callback_data)
