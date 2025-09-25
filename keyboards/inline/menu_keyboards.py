@@ -1,3 +1,4 @@
+import hashlib
 import uuid
 from typing import Tuple, List, Any
 from loader import dataBase
@@ -21,6 +22,8 @@ class menu_cd(CallbackData, prefix="show_menu"):
     final_status: str = "0"
     ref_id: str = "0"
     start_menu: str = "0"
+    section: str = "0"
+    dish_id: str = "0"
 
 
 class welcome_cd(CallbackData, prefix="welcome_menu"):
@@ -328,3 +331,91 @@ async def check_latest_keyboard(message: Any, restaurant_worksheet_id, page: int
 
     return markup.as_markup()
 
+
+async def category_dishes_keyboard(message: Any, callback_data: menu_cd):
+    CURRENT_LEVEL = 4
+    restaurant_worksheet_id = callback_data.restaurant_worksheet_id
+
+    if not dataBase.table_exists(str(restaurant_worksheet_id)):
+        return back_button(callback_data)
+
+    sections = dataBase.get_sections(str(restaurant_worksheet_id))
+    markup = InlineKeyboardBuilder()
+
+    # Кнопки разделов
+    for row in sections:
+        section_name = row["section"]
+        section_hash = hashlib.md5(section_name.encode("utf-8")).hexdigest()[:8]
+        markup.row(
+            InlineKeyboardButton(
+                text=section_name,
+                callback_data=menu_cd(
+                    level=CURRENT_LEVEL + 1,
+                    restaurant_worksheet_id=restaurant_worksheet_id,
+                    section=section_hash,
+                    start_menu="s_n_d"
+                ).pack()
+            ),
+            width=1
+        )
+
+    markup.row(
+        InlineKeyboardButton(
+            text="Open food",
+            callback_data=menu_cd(
+                level=CURRENT_LEVEL + 1,
+                restaurant_worksheet_id=restaurant_worksheet_id,
+                section="open_food",
+                start_menu="open_food",
+                dish_id="none"
+            ).pack()
+        )
+    )
+    # Кнопка назад
+    markup.row(
+        InlineKeyboardButton(
+            text=lexicon["button_back"],
+            callback_data=menu_cd(
+                level=CURRENT_LEVEL - 1,
+                restaurant_worksheet_id=restaurant_worksheet_id,
+                start_menu="new_review",
+            ).pack()
+        )
+    )
+
+    return markup.as_markup()
+
+
+async def dishes_by_category_keyboard(message: Any, callback_data: menu_cd, page: int = 0) -> InlineKeyboardMarkup:
+    CURRENT_LEVEL = 5
+    restaurant_worksheet_id = callback_data.restaurant_worksheet_id
+    section = dataBase.get_name_section_by_hash(restaurant_worksheet_id, callback_data.section)
+
+    dishes = dataBase.get_dishes_by_section(str(restaurant_worksheet_id), section)
+
+    markup = InlineKeyboardBuilder()
+    buttons = []
+    for dish in dishes:
+        buttons.append(InlineKeyboardButton(
+            text=dish["dish_name"],
+            callback_data=menu_cd(
+                level=CURRENT_LEVEL,
+                restaurant_worksheet_id=restaurant_worksheet_id,
+                start_menu="open_food",
+                dish_id=str(dish["id"]),
+            ).pack(),
+        ))
+    markup.row(*buttons, width=1)
+    # Кнопка назад
+    markup.row(
+        InlineKeyboardButton(
+            text=lexicon["button_back"],
+            callback_data=menu_cd(
+                level=CURRENT_LEVEL - 1,
+                restaurant_worksheet_id=restaurant_worksheet_id,
+                start_menu="new_review"
+            ).pack()
+        )
+    )
+
+    return markup.as_markup()

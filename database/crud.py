@@ -1,3 +1,4 @@
+import hashlib
 import sqlite3
 
 
@@ -52,17 +53,23 @@ class Database:
     def read_restaurant(self, restaurant_id):
         return self.execute("SELECT * FROM reviews WHERE worksheet_id = ?", (restaurant_id,), fetchone=True)
 
-    def new_review(self, worksheet_id, status, dish_name, photo_path, description, price, surname_reviewer, surname_chef, final_status, ref_id):
+    def new_review(self, worksheet_id, status, dish_name, photo_path, description, price, surname_reviewer,
+                   surname_chef, final_status, ref_id):
         self.execute(
             "INSERT INTO reviews (worksheet_id, status, dish_name, photo_path, description, price, surname_reviewer, surname_chef, final_status, ref_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (worksheet_id, status, dish_name, photo_path, description, price, surname_reviewer, surname_chef, final_status, ref_id))
+            (worksheet_id, status, dish_name, photo_path, description, price, surname_reviewer, surname_chef,
+             final_status, ref_id))
 
     def count_check_reviews(self, restaurant_id):
-        result = self.execute("SELECT COUNT(*) as count FROM reviews WHERE worksheet_id = ? AND final_status = 'На доработку' AND ref_id = 0", (restaurant_id,), fetchone=True)
+        result = self.execute(
+            "SELECT COUNT(*) as count FROM reviews WHERE worksheet_id = ? AND final_status = 'На доработку' AND ref_id = 0",
+            (restaurant_id,), fetchone=True)
         return result["count"] if result else 0
 
     def get_reviews_for_check(self, restaurant_id):
-        return self.execute("SELECT * FROM reviews WHERE worksheet_id = ? AND final_status = 'На доработку' AND ref_id = 0", (restaurant_id,), fetchall=True)
+        return self.execute(
+            "SELECT * FROM reviews WHERE worksheet_id = ? AND final_status = 'На доработку' AND ref_id = 0",
+            (restaurant_id,), fetchall=True)
 
     def get_dish_info(self, ref_id):
         result = self.execute("SELECT dish_name, description FROM reviews WHERE id = ?", (ref_id,), fetchone=True)
@@ -73,3 +80,25 @@ class Database:
 
     def get_managers(self):
         return self.execute("SELECT user_tg_id FROM users WHERE role = 'manager'", fetchall=True)
+
+    def table_exists(self, table_name: str) -> bool:
+        result = self.execute("SELECT name FROM sqlite_master WHERE type='table' AND name = ?", (table_name,),
+                              fetchone=True)
+        return result is not None
+
+    def get_sections(self, table_name: str):
+        return self.execute(f"SELECT DISTINCT section FROM '{table_name}'", fetchall=True)
+
+    def get_dishes_by_section(self, table_name: str, section: str):
+        return self.execute(f"SELECT dish_name, id FROM '{table_name}' WHERE section = ?", (section,), fetchall=True)
+
+    def get_dishes_by_id(self, table_name: str, dish_id: int):
+        return self.execute(f"SELECT section, dish_name FROM '{table_name}' WHERE id = ?", (dish_id,), fetchone=True)
+
+    def get_name_section_by_hash(self, table_name: str, hash_str: str):
+        result = self.execute(f"SELECT DISTINCT section FROM '{table_name}'", fetchall=True)
+        if result:
+            for row in result:
+                section = row["section"]
+                if hashlib.md5(section.encode("utf-8")).hexdigest()[:8] == hash_str:
+                    return section

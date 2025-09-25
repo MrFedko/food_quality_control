@@ -12,7 +12,10 @@ from keyboards.inline.menu_keyboards import \
      menu_cd,
      final_status_keyboard,
      accept_final_keyboard,
-     check_latest_keyboard
+     check_latest_keyboard,
+     category_dishes_keyboard,
+     back_button,
+     dishes_by_category_keyboard
      )
 
 
@@ -101,3 +104,27 @@ async def list_accept_final(callback: CallbackQuery, callback_data: menu_cd, **k
 async def list_check_latest(callback: CallbackQuery, restaurant_worksheet_id, **kwargs):
     markup = await check_latest_keyboard(callback, restaurant_worksheet_id)
     await callback.message.edit_reply_markup(reply_markup=markup)
+
+
+async def list_category_dishes(message: Union[CallbackQuery, Message], callback_data: menu_cd):
+    if dataBase.table_exists(callback_data.restaurant_worksheet_id):
+        markup = await category_dishes_keyboard(message, callback_data)
+        text = lexicon["dish_name_cat_menu"]
+    else:
+        markup = await back_button(callback_data)
+        text = lexicon["dish_name"]
+    if isinstance(message, Message):
+        await message.answer(text, reply_markup=markup)
+    elif isinstance(message, CallbackQuery):
+        call = message
+        await call.message.edit_text(text, reply_markup=markup)
+
+
+async def list_dishes_by_category(message: Union[CallbackQuery, Message], callback_data: menu_cd):
+    markup = await dishes_by_category_keyboard(message, callback_data)
+    text = lexicon["dish_name_cat_menu"]
+    if isinstance(message, Message):
+        await message.answer(text, reply_markup=markup)
+    elif isinstance(message, CallbackQuery):
+        call = message
+        await call.message.edit_text(text, reply_markup=markup)
