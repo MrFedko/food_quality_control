@@ -265,7 +265,7 @@ async def accept_final_keyboard(message: Any, callback_data: menu_cd) -> InlineK
                 restaurant_worksheet_id=callback_data.restaurant_worksheet_id,
                 status=callback_data.status,
                 final_status=callback_data.final_status,
-                start_menu="again_rest_menu"
+                start_menu="a_r_m"
             ).pack(),
         ),
     ]

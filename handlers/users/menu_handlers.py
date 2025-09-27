@@ -203,7 +203,7 @@ async def final_status_handler(callback: types.CallbackQuery, callback_data: men
 
 
 @router.callback_query(
-    menu_cd.filter(MF.start_menu == "again_rest_menu"), flags={"chat_action": "typing"}
+    menu_cd.filter(MF.start_menu == "a_r_m"), flags={"chat_action": "typing"}
 )
 async def again_restaurant_menu_handler(callback: CallbackQuery, callback_data: menu_cd, state: FSMContext):
     page = 0
