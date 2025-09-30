@@ -7,6 +7,7 @@ from database.crud import Database
 from utils.dropbox import DropboxClient
 from utils.sheet_utils.sheet_control import GoogleSheetsClient
 from utils.watcher import Watcher
+from utils.stats_collector import WeeklyStats
 
 session = AiohttpSession()
 bot = Bot(token=settings.BOT_TOKEN, parse_mode=ParseMode.HTML, session=session)
@@ -19,3 +20,4 @@ client = GoogleSheetsClient(
 )
 clientDB = DropboxClient(settings.DB_KEY, settings.DB_SECRET, settings.DROPBOX_TOKEN)
 watcher = Watcher(dataBase, bot)
+weekly_stats = WeeklyStats(dataBase, bot, settings.worksheet_ids)

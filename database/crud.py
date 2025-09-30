@@ -1,5 +1,6 @@
 import hashlib
 import sqlite3
+from datetime import datetime, timedelta
 
 
 class Database:
@@ -102,3 +103,15 @@ class Database:
                 section = row["section"]
                 if hashlib.md5(section.encode("utf-8")).hexdigest()[:8] == hash_str:
                     return section
+
+    def get_reviews(self, start, end):
+        if isinstance(start, datetime):
+            start = start.strftime("%Y-%m-%d %H:%M:%S")
+        if isinstance(end, datetime):
+            end = end.strftime("%Y-%m-%d %H:%M:%S")
+
+        return self.execute(
+            "SELECT * FROM reviews WHERE rev_date >= ? AND rev_date < ?",
+            (start, end),
+            fetchall=True
+        )
