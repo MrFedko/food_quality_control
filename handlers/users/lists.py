@@ -20,7 +20,7 @@ from keyboards.inline.menu_keyboards import \
 
 
 async def list_restaurant_menu(message: Union[CallbackQuery, Message], **kwargs):
-    markup = await restaurant_keyboard()
+    markup = await restaurant_keyboard(message.from_user.id)
     text = lexicon["/start"].format(name=message.from_user.first_name)
 
     if isinstance(message, Message):

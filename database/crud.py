@@ -115,3 +115,14 @@ class Database:
             (start, end),
             fetchall=True
         )
+
+    def last_review_rest_by_user_id(self, user_tg_id):
+        user = self.read_user(user_tg_id)
+        if not user:
+            return None
+        surname = user["surname"]
+        return self.execute(
+            "SELECT worksheet_id FROM reviews WHERE surname_reviewer = ? ORDER BY rev_date DESC LIMIT 1",
+            (surname,),
+            fetchone=True
+        )
