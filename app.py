@@ -4,7 +4,7 @@ from data.config import settings
 from handlers.users import menu_handlers
 from handlers.admins import admin_hendlers, help
 import asyncio
-from loader import dp, bot, watcher
+from loader import dp, bot, watcher, weekly_stats
 from utils.misc.set_bot_commands import set_default_commands
 from utils.misc.notify_admins import on_startup_notify, on_shutdown_notify
 
@@ -26,6 +26,7 @@ def connect_routers():
 
 async def main():
     asyncio.create_task(watcher.run_loop())
+    asyncio.create_task(weekly_stats.run_loop())
     dp.message.middleware.register(ChatActionMiddleware())
     await bot.delete_webhook(drop_pending_updates=True)
     dp.startup.register(on_startup)
