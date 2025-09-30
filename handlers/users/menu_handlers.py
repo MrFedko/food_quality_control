@@ -50,7 +50,7 @@ async def restaurant_menu_handler(callback: CallbackQuery, callback_data: menu_c
 @dp.callback_query(lambda c: c.data.startswith("page:"))
 async def page_handler(callback: types.CallbackQuery):
     page = int(callback.data.split(":")[1])
-    await callback.message.edit_reply_markup(reply_markup=await restaurant_keyboard(page=page))
+    await callback.message.edit_reply_markup(reply_markup=await restaurant_keyboard(callback.from_user.id, page=page))
     await callback.answer()
 
 
@@ -230,7 +230,7 @@ async def again_restaurant_menu_handler(callback: CallbackQuery, callback_data: 
     if ref_id != "0":
         dataBase.update_ref_id(ref_id, new_ref_id if ref_id != "0" else ref_id)
     dataBase.new_review(worksheet_id, status, dish_name, photo_path, description, price, surname_reviewer, surname_chef, final_status, new_ref_id if ref_id != "0" else ref_id)
-    await callback.message.edit_reply_markup(reply_markup=await restaurant_keyboard(page=page))
+    await callback.message.edit_reply_markup(reply_markup=await restaurant_keyboard(callback.from_user.id, page=page))
     await callback.answer()
     await client.insert_review_row(worksheet_id, date, status,
                                    dish_name, formula, description, price, surname_reviewer,

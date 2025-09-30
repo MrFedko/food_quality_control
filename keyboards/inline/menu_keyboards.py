@@ -34,7 +34,7 @@ class welcome_cd(CallbackData, prefix="welcome_menu"):
     role: str = "0"
 
 
-async def restaurant_keyboard(page: int = 0) -> InlineKeyboardMarkup:
+async def restaurant_keyboard(user_tg_id, page: int = 0) -> InlineKeyboardMarkup:
     # current menu level 0
     CURRENT_LEVEL = 0
 
@@ -44,7 +44,13 @@ async def restaurant_keyboard(page: int = 0) -> InlineKeyboardMarkup:
     start = page * per_page
     end = start + per_page
     sliced = items[start:end]
-
+    last_review_ret_id = dataBase.last_review_rest_by_user_id(user_tg_id)
+    if last_review_ret_id:
+        # Move the last reviewed restaurant to the front of the list
+        for i, (name, rest_id) in enumerate(sliced):
+            if rest_id == last_review_ret_id["worksheet_id"]:
+                sliced.insert(0, sliced.pop(i))
+                break
     markup = InlineKeyboardBuilder()
 
     # Кнопки ресторанов (по 2 в ряд)
