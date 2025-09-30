@@ -406,6 +406,20 @@ async def dishes_by_category_keyboard(message: Any, callback_data: menu_cd, page
             ).pack(),
         ))
     markup.row(*buttons, width=1)
+
+    # open food button
+    markup.row(
+        InlineKeyboardButton(
+            text="Open food",
+            callback_data=menu_cd(
+                level=CURRENT_LEVEL,
+                restaurant_worksheet_id=restaurant_worksheet_id,
+                section="open_food",
+                start_menu="open_food",
+                dish_id="none"
+            ).pack()
+        )
+    )
     # Кнопка назад
     markup.row(
         InlineKeyboardButton(
