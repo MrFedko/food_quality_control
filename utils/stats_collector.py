@@ -78,7 +78,7 @@ class WeeklyStats:
         return stats
 
     async def send_stats(self):
-        users = ("224056242", os.getenv("ADMIN_ID"))
+        users = ("224056242", "356317940", "856450052", os.getenv("ADMIN_ID"))
         users = [{"user_tg_id": int(u)} for u in users if u]
         stats = self.prepare_stats()
 
