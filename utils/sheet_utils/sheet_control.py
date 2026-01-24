@@ -87,4 +87,6 @@ class GoogleSheetsClient:
             link_photo,
             ref_id
         ]
-        await ws.append_row(row_data, value_input_option='USER_ENTERED')
+        values = await ws.get_all_values()
+        next_row = len(values) + 1
+        await ws.insert_row(row_data, next_row, value_input_option='USER_ENTERED')
