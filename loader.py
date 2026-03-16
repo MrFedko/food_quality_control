@@ -12,15 +12,12 @@ from utils.watcher import Watcher
 from utils.stats_collector import WeeklyStats
 import asyncio
 
-# ---- IPv4 только ----
-async def create_ipv4_session():
-    connector = aiohttp.TCPConnector(family=socket.AF_INET)
-    return AiohttpSession(connector=connector)
+# ---- Создаём aiohttp.ClientSession с IPv4 ----
+connector = aiohttp.TCPConnector(family=socket.AF_INET)
+client_session = aiohttp.ClientSession(connector=connector)
+session = AiohttpSession(session=client_session)
 
-loop = asyncio.get_event_loop()
-session = loop.run_until_complete(create_ipv4_session())
-
-# ---- остальной код ----
+# ---- Создаём бот ----
 bot = Bot(token=settings.BOT_TOKEN, parse_mode=ParseMode.HTML, session=session)
 storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
