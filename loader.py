@@ -8,22 +8,6 @@ from utils.dropbox import DropboxClient
 from utils.sheet_utils.sheet_control import GoogleSheetsClient
 from utils.watcher import Watcher
 from utils.stats_collector import WeeklyStats
-from aiohttp_socks import ProxyConnector
-import aiohttp
-
-storage = MemoryStorage()
-dp = Dispatcher(storage=storage)
-
-# Инициализация бота — внутри async
-async def create_bot():
-    connector = ProxyConnector.from_url("socks5://127.0.0.1:1080")
-    session = AiohttpSession(connector=connector)
-    bot = Bot(
-        token=settings.BOT_TOKEN,
-        parse_mode=ParseMode.HTML,
-        session=session
-    )
-    return bot
 
 session = AiohttpSession()
 bot = Bot(token=settings.BOT_TOKEN, parse_mode=ParseMode.HTML, session=session)
