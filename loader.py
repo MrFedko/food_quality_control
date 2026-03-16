@@ -1,5 +1,7 @@
+import socket
+import aiohttp
 from aiogram import Bot, Dispatcher
-from aiogram.enums.parse_mode import ParseMode
+from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.client.session.aiohttp import AiohttpSession
 from data.config import settings
@@ -8,8 +10,17 @@ from utils.dropbox import DropboxClient
 from utils.sheet_utils.sheet_control import GoogleSheetsClient
 from utils.watcher import Watcher
 from utils.stats_collector import WeeklyStats
+import asyncio
 
-session = AiohttpSession()
+# ---- IPv4 только ----
+async def create_ipv4_session():
+    connector = aiohttp.TCPConnector(family=socket.AF_INET)
+    return AiohttpSession(connector=connector)
+
+loop = asyncio.get_event_loop()
+session = loop.run_until_complete(create_ipv4_session())
+
+# ---- остальной код ----
 bot = Bot(token=settings.BOT_TOKEN, parse_mode=ParseMode.HTML, session=session)
 storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
