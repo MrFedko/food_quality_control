@@ -8,7 +8,13 @@ from utils.dropbox import DropboxClient
 from utils.sheet_utils.sheet_control import GoogleSheetsClient
 from utils.watcher import Watcher
 from utils.stats_collector import WeeklyStats
+from aiohttp_socks import ProxyConnector
+import aiohttp
+from aiogram import Bot
+from aiogram.enums import ParseMode
+from data.config import settings
 
+connector = ProxyConnector.from_url("socks5://127.0.0.1:1080")
 session = AiohttpSession()
 bot = Bot(token=settings.BOT_TOKEN, parse_mode=ParseMode.HTML, session=session)
 storage = MemoryStorage()
