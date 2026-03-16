@@ -3,7 +3,6 @@ import aiohttp
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
-from aiogram.client.session.aiohttp import AiohttpSession
 from data.config import settings
 from database.crud import Database
 from utils.dropbox import DropboxClient
@@ -11,18 +10,16 @@ from utils.sheet_utils.sheet_control import GoogleSheetsClient
 from utils.watcher import Watcher
 from utils.stats_collector import WeeklyStats
 
-# ---- IPv4-only factory ----
-def ipv4_session_factory(*args, **kwargs):
-    connector = aiohttp.TCPConnector(family=socket.AF_INET)
-    return aiohttp.ClientSession(connector=connector, *args, **kwargs)
+# ---- Создаём IPv4-only aiohttp session ----
+connector = aiohttp.TCPConnector(family=socket.AF_INET)
+client_session = aiohttp.ClientSession(connector=connector)
 
-# ---- создаём AiohttpSession с IPv4 ----
-session = AiohttpSession(session_factory=ipv4_session_factory)
-
-# ---- остальной код ----
-bot = Bot(token=settings.BOT_TOKEN, parse_mode=ParseMode.HTML, session=session)
+# ---- Создаём Bot напрямую с этой сессией ----
+bot = Bot(token=settings.BOT_TOKEN, parse_mode=ParseMode.HTML, session=client_session)
 storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
+
+# ---- остальной код ----
 dataBase = Database(settings.DB_PATH)
 client = GoogleSheetsClient(
     creds_path="quality-control-469712-5f601fa34788.json",
