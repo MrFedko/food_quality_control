@@ -25,7 +25,6 @@ async def create_bot():
     )
     return bot
 
-connector = ProxyConnector.from_url("socks5://127.0.0.1:1080")
 session = AiohttpSession()
 bot = Bot(token=settings.BOT_TOKEN, parse_mode=ParseMode.HTML, session=session)
 storage = MemoryStorage()
