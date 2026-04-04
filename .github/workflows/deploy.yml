@@ -18,10 +18,9 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
           script: |
             # Переходим в директорию проекта
-            cd /home/controlBot
+            cd /home/controlBot/food_quality_control
                   git pull
                   sudo systemctl stop controlbot
                   sudo systemctl enable controlbot
